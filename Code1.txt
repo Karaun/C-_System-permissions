@@ -1,0 +1,165 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Configuration;
+using System.Data.OleDb;
+namespace 数据库应用
+{
+    public partial class Form1 : Form
+    {
+
+        OleDbConnection DC = new OleDbConnection();
+        OleDbCommand MyCommand = new OleDbCommand();
+        public ToolStripItemCollection MenuStripItems;//菜单控件类型
+        public List<string> AccountList;//用户账号列表
+        public string Account; //用户账号
+        public string passWord;//用户密码
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            AccountList = new List<string>();//用户账号数据
+            OleDbDataReader MyReader;
+            string path = System.AppDomain.CurrentDomain.BaseDirectory.ToString();
+            DC.ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + @path + "GIS2020.mdb";//选取数据库
+            MyCommand.Connection = DC;//进行数据库连接
+            DC.Open();//数据库开启
+
+            MyCommand.CommandText = "Select * From RoleInfo";//选取用户角色表RoleInfo
+            MyReader = MyCommand.ExecuteReader();
+            while (MyReader.Read())
+            {
+                //将用户账户加载到列表中
+                AccountList.Add(MyReader.GetValue(MyReader.GetOrdinal("RoleName")).ToString());
+            }
+            MyReader.Close();
+        }
+
+        //搜索所有菜单控件，用于存储菜单信息
+        public void SearchMeun(ToolStripItemCollection MenuStripItems, int ID, string Account)
+        {
+            for (int i = 0; i < MenuStripItems.Count; i++) //搜选菜单栏中的项目
+            {
+                if ((MenuStripItems[i]) is ToolStripMenuItem)
+                {
+                    ToolStripMenuItem MenuItem = (ToolStripMenuItem)MenuStripItems[i];//定义菜单控键用于存储菜单信息
+                    MyCommand.Parameters.Clear();
+                    MyCommand.CommandText = "Insert into RankInfo (RoleName,RoleID,MenuName,MenuText) Values(@Str1,@Str2,@Str3,@Str4)";
+                    MyCommand.Parameters.AddWithValue("Str1", Account);
+                    MyCommand.Parameters.AddWithValue("Str2", ID);
+                    MyCommand.Parameters.AddWithValue("Str3", MenuItem.Name);
+                    MyCommand.Parameters.AddWithValue("Str4", MenuItem.Text);
+                    MyCommand.ExecuteScalar();
+
+                    if (MenuItem.HasDropDownItems)//递归，存在菜单下级时执行
+                        SearchMeun(MenuItem.DropDownItems, ID, Account);
+                }
+            }
+        }
+
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            int Roleid = 0;
+            //使用Switch函数，存储用户类型
+            switch (cboxUserType.Text)
+            {
+                case "管理员":
+                    Roleid = 1;
+                    break;
+                case "学生":
+                    Roleid = 2;
+                    break;
+                case "老师":
+                    Roleid = 3;
+                    break;
+                case "外来用户":
+                    Roleid = 4;
+                    break;
+                default:
+                    MessageBox.Show("请选择用户类型","提示");
+                    break;  
+            }
+
+            if (SetUserInfo(txtUserName, txtUserPassWord, AccountList, Roleid))
+            {
+                passWord = txtUserPassWord.Text;
+                Account = txtUserName.Text;
+                MessageBox.Show("注册成功");
+                this.DialogResult = DialogResult.OK;
+            }
+            
+        }
+
+        //设置用户信息
+        public bool SetUserInfo(TextBox t1, TextBox t2, List<string> l1, int iRoleID)
+        {
+            bool result = false;
+            string Name = t1.Text.Trim();
+            string PassWord = t2.Text.Trim();
+            if (Name.Length == 0)
+            {
+                MessageBox.Show("请输入用户名");
+                return result;
+            }
+
+            if (PassWord.Length == 0)
+            {
+                MessageBox.Show("请输入密码");
+                return result;
+            }
+
+            if (l1.IndexOf(Name) >= 0)
+            {
+                MessageBox.Show(Name + "已存在，请输入一个新用户名");
+                t1.Focus();
+                t1.Text = "";
+                return result;
+            }
+
+            //在RoleInfo的表格中添加用户数据
+            MyCommand.Parameters.Clear();
+            MyCommand.CommandText = "insert into RoleInfo (UserID, RoleName, UserPass) values (@Str1, @Str2, @Str3)";
+            MyCommand.Parameters.AddWithValue("Str1", iRoleID);  //用户类型添加入库
+            MyCommand.Parameters.AddWithValue("Str2", Name);    //用户账户添加入库
+            MyCommand.Parameters.AddWithValue("Str3", PassWord);//用户密码添加入库
+
+            if (MyCommand.ExecuteNonQuery() == 1)
+            {
+                result = true;//用户创建执行成功
+                t1.Text = "";
+                t1.Focus();
+                l1.Add(Name); 
+
+                //用于获取用户ID用于后续的菜单信息插入数据库(RankInfo)中
+                MyCommand.Parameters.Clear();
+                MyCommand.CommandText = "Select UserID From RoleInfo Where RoleName = @sRoleName";
+                MyCommand.Parameters.AddWithValue("sRoleName", Name);
+                iRoleID = (int)MyCommand.ExecuteScalar();//获取用户ID
+                //执行菜单插入
+                SearchMeun(MenuStripItems, iRoleID, Name);
+            }
+
+            return result;
+        }
+
+        //清空函数
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            txtUserName.Clear();
+            txtUserPassWord.Clear();
+            cboxUserType.Text = "";
+        }
+    }
+}
