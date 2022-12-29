@@ -1,0 +1,11 @@
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\bin\Debug\权限管理.exe.config
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\bin\Debug\权限管理.exe
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\bin\Debug\权限管理.pdb
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.csprojAssemblyReference.cache
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.Form1.resources
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.Form2.resources
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.Properties.Resources.resources
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.csproj.GenerateResource.cache
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.csproj.CoreCompileInputs.cache
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.exe
+C:\Users\12554\Desktop\权限控制\权限管理\权限管理\obj\Debug\权限管理.pdb
